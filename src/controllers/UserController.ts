@@ -1,8 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
 import Controller from './Controller';
-import HttpStatusCode from '../responses/HttpStatusCode';
-import IdInvalidException from '../errors/IdInvalidException';
 import NoContentException from '../errors/NoContentException';
 import ServerErrorException from '../errors/ServerErrorException';
 import User from '../schemas/User';
@@ -27,12 +25,14 @@ class UserController extends Controller {
 		req: Request,
 		res: Response,
 		next: NextFunction
-	): Promise<Response> {
+	): Promise<Response | undefined> {
 		try {
 			const users = await User.find();
-			return res.send(responseOk(res, users));
+
+			if (users.length) return responseOk(res, users);
+			next(new NoContentException());
 		} catch (error) {
-			return res.send(new ServerErrorException(error));
+			next(new ServerErrorException(error));
 		}
 	}
 
@@ -40,18 +40,16 @@ class UserController extends Controller {
 		req: Request,
 		res: Response,
 		next: NextFunction
-	): Promise<Response> {
+	): Promise<Response | undefined> {
 		try {
 			const { id } = req.params;
-			if (ValidationService.validateId(id))
-				return res
-					.status(HttpStatusCode.BAD_REQUEST)
-					.send(new IdInvalidException());
+			if (ValidationService.validateId(id, next)) return;
 
 			const user = await User.findById(id);
-			return res.send(responseOk(res, user));
+			if (user) return responseOk(res, user);
+			next(new NoContentException());
 		} catch (error) {
-			return res.send(new ServerErrorException(error));
+			next(new ServerErrorException(error));
 		}
 	}
 
@@ -59,13 +57,13 @@ class UserController extends Controller {
 		req: Request,
 		res: Response,
 		next: NextFunction
-	): Promise<Response> {
+	): Promise<Response | undefined> {
 		try {
 			const user = await User.create(req.body);
 
-			return res.send(responseCreate(res, user));
+			return responseCreate(res, user);
 		} catch (error) {
-			return res.send(new ServerErrorException(error));
+			next(new ServerErrorException(error));
 		}
 	}
 
@@ -73,19 +71,17 @@ class UserController extends Controller {
 		req: Request,
 		res: Response,
 		next: NextFunction
-	): Promise<Response> {
+	): Promise<Response | undefined> {
 		try {
 			const { id } = req.params;
-			if (ValidationService.validateId(id))
-				return res
-					.status(HttpStatusCode.BAD_REQUEST)
-					.send(new IdInvalidException());
+			if (ValidationService.validateId(id, next)) return;
 
 			const user = await User.findByIdAndUpdate(id, req.body, () => {});
+			if (user) return responseOk(res, user);
 
-			return res.send(responseOk(res, user));
+			next(new NoContentException());
 		} catch (error) {
-			return res.send(new ServerErrorException(error));
+			next(new ServerErrorException(error));
 		}
 	}
 
@@ -93,25 +89,20 @@ class UserController extends Controller {
 		req: Request,
 		res: Response,
 		next: NextFunction
-	): Promise<Response> {
+	): Promise<Response | undefined> {
 		try {
 			const { id } = req.params;
-			if (ValidationService.validateId(id))
-				return res
-					.status(HttpStatusCode.BAD_REQUEST)
-					.send(new IdInvalidException());
+			if (ValidationService.validateId(id, next)) return;
 
 			const user = await User.findById(id);
 			if (user) {
 				user.deleteOne();
-				return res.send(responseOk(res, user));
+				return responseOk(res, user);
 			}
 
-			return res
-				.status(HttpStatusCode.NO_CONTENT)
-				.send(new NoContentException());
+			next(new NoContentException());
 		} catch (error) {
-			return res.send(new ServerErrorException(error));
+			next(new ServerErrorException(error));
 		}
 	}
 }

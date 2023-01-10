@@ -25,15 +25,13 @@ function isValidationError(error): boolean {
 	return error.name === 'ValidationError';
 }
 
-function getMessage(error): string {
+function getMessage(error): string | undefined {
 	try {
 		if (isMongoException(error)) {
 			if (isKeyUniqueError(error)) return getMessageKeyUnique(error);
 			if (isValidationError(error)) return getMessageValidationError(error);
 		} else return getMessageGeneric();
 	} catch (error) {
-		return getMessageGeneric();
-	} finally {
 		return getMessageGeneric();
 	}
 }
@@ -45,7 +43,7 @@ function isKeyUniqueError(error) {
 function getMessageKeyUnique(error): string {
 	const { keyPattern } = error;
 
-	const listFormatedErros = [''];
+	const listFormatedErros: string[] = [];
 	Object.keys(keyPattern).forEach((field) => {
 		listFormatedErros.push(`${field} deve ser único`);
 	});
@@ -56,7 +54,7 @@ function getMessageKeyUnique(error): string {
 function getMessageValidationError(error): string {
 	const { errors } = error;
 
-	const listFormatedErros = [''];
+	const listFormatedErros: string[] = [];
 	Object.keys(errors).forEach((field) => {
 		listFormatedErros.push(errors[field].message);
 	});

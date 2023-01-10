@@ -16,6 +16,8 @@ class App {
 		this.connectDatabase();
 		this.initExpressJson();
 		this.initControllers(controllers);
+		this.initNotFoundErrorMiddleware();
+		this.initRunTimeErrorMiddleware();
 	}
 
 	private initMongoose(): void {
