@@ -2,6 +2,8 @@ import Controller from './controllers/controller';
 import cors from 'cors';
 import express from 'express';
 import mongoose from 'mongoose';
+import notFoundErrorMiddleware from './middlewares/NotFoundErrorMiddleware';
+import runTimeErrorMiddleware from './middlewares/RunTimeErrorMiddleware';
 
 class App {
 	public app: express.Application;
@@ -40,6 +42,14 @@ class App {
 		controllers.forEach((controller) => {
 			this.app.use('/', controller.router);
 		});
+	}
+
+	private initNotFoundErrorMiddleware() {
+		this.app.all('*', notFoundErrorMiddleware);
+	}
+
+	private initRunTimeErrorMiddleware() {
+		this.app.use(runTimeErrorMiddleware);
 	}
 
 	public listen(port: number): void {
