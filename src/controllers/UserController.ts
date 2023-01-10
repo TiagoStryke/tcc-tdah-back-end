@@ -1,7 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
 
-import Controller from './controller';
-import { Types } from 'mongoose';
+import Controller from './Controller';
+import HttpStatusCode from '../responses/HttpStatusCode';
+import IdInvalidException from '../errors/IdInvalidException';
+import NoContentException from '../errors/NoContentException';
+import ServerErrorException from '../errors/ServerErrorException';
 import User from '../schemas/User';
 import ValidationService from '../services/ValidationService';
 
@@ -23,9 +26,12 @@ class UserController extends Controller {
 		res: Response,
 		next: NextFunction
 	): Promise<Response> {
-		const users = await User.find();
-
-		return res.send(users);
+		try {
+			const users = await User.find();
+			return res.send(users);
+		} catch (error) {
+			return res.send(new ServerErrorException(error));
+		}
 	}
 
 	private async findById(
@@ -33,13 +39,18 @@ class UserController extends Controller {
 		res: Response,
 		next: NextFunction
 	): Promise<Response> {
-		const { id } = req.params;
+		try {
+			const { id } = req.params;
+			if (ValidationService.validateId(id))
+				return res
+					.status(HttpStatusCode.BAD_REQUEST)
+					.send(new IdInvalidException());
 
-		if (ValidationService.validateId(id))
-			return res.status(400).send('deu ruim');
-
-		const user = await User.findById(id);
-		return res.send(user);
+			const user = await User.findById(id);
+			return res.send(user);
+		} catch (error) {
+			return res.send(new ServerErrorException(error));
+		}
 	}
 
 	private async create(
@@ -47,9 +58,13 @@ class UserController extends Controller {
 		res: Response,
 		next: NextFunction
 	): Promise<Response> {
-		const user = await User.create(req.body);
+		try {
+			const user = await User.create(req.body);
 
-		return res.send(user);
+			return res.send(user);
+		} catch (error) {
+			return res.send(new ServerErrorException(error));
+		}
 	}
 
 	private async edit(
@@ -57,13 +72,19 @@ class UserController extends Controller {
 		res: Response,
 		next: NextFunction
 	): Promise<Response> {
-		const { id } = req.params;
-		if (ValidationService.validateId(id))
-			return res.status(400).send('deu ruim');
+		try {
+			const { id } = req.params;
+			if (ValidationService.validateId(id))
+				return res
+					.status(HttpStatusCode.BAD_REQUEST)
+					.send(new IdInvalidException());
 
-		const user = await User.findByIdAndUpdate(id, req.body);
+			const user = await User.findByIdAndUpdate(id, req.body, () => {});
 
-		return res.send(user);
+			return res.send(user);
+		} catch (error) {
+			return res.send(new ServerErrorException(error));
+		}
 	}
 
 	private async delete(
@@ -71,17 +92,23 @@ class UserController extends Controller {
 		res: Response,
 		next: NextFunction
 	): Promise<Response> {
-		const { id } = req.params;
-		if (ValidationService.validateId(id))
-			return res.status(400).send('deu ruim');
+		try {
+			const { id } = req.params;
+			if (ValidationService.validateId(id))
+				return res
+					.status(HttpStatusCode.BAD_REQUEST)
+					.send(new IdInvalidException());
 
-		const user = await User.findById(id);
-		if (user) {
-			user.deleteOne();
-			return res.send(user);
+			const user = await User.findById(id);
+			if (user) {
+				user.deleteOne();
+				return res.send(user);
+			}
+
+			return res.status(HttpStatusCode.NO_CONTENT).send();
+		} catch (error) {
+			return res.send(new ServerErrorException(error));
 		}
-
-		return res.status(204).send();
 	}
 }
 
