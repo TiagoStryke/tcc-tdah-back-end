@@ -1,3 +1,4 @@
+import Controller from './controllers/controller';
 import cors from 'cors';
 import express from 'express';
 import mongoose from 'mongoose';
@@ -5,12 +6,14 @@ import mongoose from 'mongoose';
 class App {
 	public app: express.Application;
 
-	public constructor() {
+	public constructor(controllers: Controller[]) {
 		this.app = express();
 		this.app.use(cors());
 
 		this.initMongoose();
 		this.connectDatabase();
+		this.initExpressJson();
+		this.initControllers(controllers);
 	}
 
 	private initMongoose(): void {
@@ -27,6 +30,16 @@ class App {
 				useCreateIndex: true,
 			}
 		);
+	}
+
+	private initExpressJson(): void {
+		this.app.use(express.json());
+	}
+
+	private initControllers(controllers: Controller[]): void {
+		controllers.forEach((controller) => {
+			this.app.use('/', controller.router);
+		});
 	}
 
 	public listen(port: number): void {
