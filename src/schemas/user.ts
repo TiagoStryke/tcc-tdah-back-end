@@ -5,6 +5,7 @@ export interface UserInterface extends Document {
 	email: string;
 	password: string;
 	createdAt: Date;
+	generatedCodes: string[];
 }
 
 const UserSchema = new Schema(
@@ -27,6 +28,11 @@ const UserSchema = new Schema(
 		createdAt: {
 			type: Date,
 			default: Date.now,
+		},
+		generatedCodes: {
+			type: [String],
+			default: [],
+			// select: false,
 		},
 	},
 	{ versionKey: false }
