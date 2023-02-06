@@ -32,7 +32,7 @@ const UserSchema = new Schema(
 		generatedCodes: {
 			type: [String],
 			default: [],
-			// select: false,
+			select: false,
 		},
 	},
 	{ versionKey: false }

@@ -19,7 +19,21 @@ class UserController extends Controller {
 		this.router.post(this.path, this.create);
 		this.router.put(`${this.path}/:id`, this.edit);
 		this.router.delete(`${this.path}/:id`, this.delete);
+		this.router.put(`${this.path}/:id/code`, this.insertGeneratedCode);
+		// this.router.post(`${this.path}/login`, this.login);
 	}
+
+	// private async login(
+	// 	req: Request,
+	// 	res: Response,
+	// 	next: NextFunction
+	// ): Promise<Response | undefined> {
+	// 	try{
+
+	// 	}catch(error){
+	// 		next(new ServerErrorException(error));
+	// 	}
+	// }
 
 	private async list(
 		req: Request,
@@ -99,6 +113,42 @@ class UserController extends Controller {
 				user.deleteOne();
 				return responseOk(res, user);
 			}
+
+			next(new NoContentException());
+		} catch (error) {
+			next(new ServerErrorException(error));
+		}
+	}
+
+	private async insertGeneratedCode(
+		req: Request,
+		res: Response,
+		next: NextFunction
+	): Promise<Response | undefined> {
+		try {
+			const { id } = req.params;
+			const { generatedCode } = req.body;
+			if (generatedCode === undefined) return;
+
+			if (ValidationService.validateId(id, next)) return;
+
+			const user = await User.findByIdAndUpdate(
+				id,
+				{ $push: { generatedCodes: generatedCode } },
+				() => {}
+			);
+
+			// const user = await User.findById(id);
+
+			if (user) {
+				if (user.generatedCodes.length >= 10) {
+					user.generatedCodes.splice(0, user.generatedCodes.length - 10);
+					await user.save();
+				}
+				return responseOk(res, user);
+			}
+
+			// if (user) return responseOk(res, user);
 
 			next(new NoContentException());
 		} catch (error) {
