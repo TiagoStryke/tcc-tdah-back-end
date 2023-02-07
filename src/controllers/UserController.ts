@@ -4,10 +4,18 @@ import Controller from './Controller';
 import NoContentException from '../errors/NoContentException';
 import ServerErrorException from '../errors/ServerErrorException';
 import User from '../schemas/User';
+import UserNotFoundErrorMiddleware from '../middlewares/UserNotFoundErrorMiddleware';
 import ValidationService from '../services/ValidationService';
+import bcrypt from 'bcrypt';
+import dotenv from 'dotenv';
+import jwt from 'jsonwebtoken';
+import notFoundErrorMiddleware from '../middlewares/NotFoundErrorMiddleware';
 import responseCreate from '../responses/ResponseCreate';
 import responseOk from '../responses/ResponseOk';
 
+dotenv.config({
+	path: __dirname + '/../.env',
+});
 class UserController extends Controller {
 	constructor() {
 		super('/user');
@@ -20,20 +28,39 @@ class UserController extends Controller {
 		this.router.put(`${this.path}/:id`, this.edit);
 		this.router.delete(`${this.path}/:id`, this.delete);
 		this.router.put(`${this.path}/:id/code`, this.insertGeneratedCode);
-		// this.router.post(`${this.path}/login`, this.login);
+		this.router.post(`${this.path}/login`, this.login);
 	}
 
-	// private async login(
-	// 	req: Request,
-	// 	res: Response,
-	// 	next: NextFunction
-	// ): Promise<Response | undefined> {
-	// 	try{
+	private async login(
+		req: Request,
+		res: Response,
+		next: NextFunction
+	): Promise<Response | undefined> {
+		const { email, password } = req.body;
+		const secret = process.env.JWT_SECRET;
+		try {
+			const user = await User.findOne({ email });
 
-	// 	}catch(error){
-	// 		next(new ServerErrorException(error));
-	// 	}
-	// }
+			if (!user) {
+				return notFoundErrorMiddleware(req, res);
+			}
+			const isMatch = await bcrypt.compare(password, user.password);
+			if (!isMatch) {
+				return UserNotFoundErrorMiddleware(req, res);
+			}
+
+			// Generate a JSON Web Token
+			const token = jwt.sign({ userId: user._id }, secret, {
+				expiresIn: '1d',
+			});
+
+			// Return the token in the response
+			return res.send({ token });
+		} catch (error) {
+			console.log(error);
+			next(new ServerErrorException(error));
+		}
+	}
 
 	private async list(
 		req: Request,
@@ -120,6 +147,40 @@ class UserController extends Controller {
 		}
 	}
 
+	// private async insertGeneratedCode(
+	// 	req: Request,
+	// 	res: Response,
+	// 	next: NextFunction
+	// ): Promise<Response | undefined> {
+	// 	try {
+	// 		const { id } = req.params;
+	// 		const { generatedCode } = req.body;
+	// 		if (generatedCode === undefined) {
+	// 			return;
+	// 		}
+
+	// 		if (ValidationService.validateId(id, next)) return;
+
+	// 		const user = await User.findByIdAndUpdate(
+	// 			id,
+	// 			{ $push: { generatedCodes: generatedCode } },
+	// 			() => {}
+	// 		);
+
+	// 		if (user) {
+	// 			if (user.generatedCodes.length >= 10) {
+	// 				user.generatedCodes.splice(0, user.generatedCodes.length - 10);
+	// 				await user.save();
+	// 			}
+	// 			return responseOk(res, user);
+	// 		}
+
+	// 		next(new NoContentException());
+	// 	} catch (error) {
+	// 		next(new ServerErrorException(error));
+	// 	}
+	// }
+
 	private async insertGeneratedCode(
 		req: Request,
 		res: Response,
@@ -128,30 +189,23 @@ class UserController extends Controller {
 		try {
 			const { id } = req.params;
 			const { generatedCode } = req.body;
-			if (generatedCode === undefined) return;
+			if (generatedCode === undefined) {
+				return;
+			}
 
 			if (ValidationService.validateId(id, next)) return;
 
-			const user = await User.findByIdAndUpdate(
-				id,
-				{ $push: { generatedCodes: generatedCode } },
-				() => {}
-			);
-
-			// const user = await User.findById(id);
+			const user = await User.findByIdAndUpdate(id, {
+				$push: { generatedCodes: { $each: generatedCode, $slice: -10 } },
+			});
 
 			if (user) {
-				if (user.generatedCodes.length >= 10) {
-					user.generatedCodes.splice(0, user.generatedCodes.length - 10);
-					await user.save();
-				}
 				return responseOk(res, user);
 			}
 
-			// if (user) return responseOk(res, user);
-
 			next(new NoContentException());
 		} catch (error) {
+			console.log(error);
 			next(new ServerErrorException(error));
 		}
 	}

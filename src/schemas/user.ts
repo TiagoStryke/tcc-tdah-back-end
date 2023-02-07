@@ -1,5 +1,7 @@
 import { Document, Schema, model } from 'mongoose';
 
+import bcrypt from 'bcrypt';
+
 export interface UserInterface extends Document {
 	name: string;
 	email: string;
@@ -23,7 +25,6 @@ const UserSchema = new Schema(
 		password: {
 			type: String,
 			required: [true, 'Senha obrigatória'],
-			select: false,
 		},
 		createdAt: {
 			type: Date,
@@ -32,10 +33,19 @@ const UserSchema = new Schema(
 		generatedCodes: {
 			type: [String],
 			default: [],
-			select: false,
 		},
 	},
 	{ versionKey: false }
 );
+
+UserSchema.pre<UserInterface>('save', async function (next) {
+	const user = this;
+	if (!user.isModified('password')) {
+		return next();
+	}
+	const salt = await bcrypt.genSalt(10);
+	user.password = await bcrypt.hash(user.password, salt);
+	next();
+});
 
 export default model<UserInterface>('User', UserSchema);

@@ -1,9 +1,9 @@
 import HttpStatusCode from './HttpStatusCode';
 import { Response } from 'express';
 
-function responseNotFound(res: Response) {
-	const status = HttpStatusCode.NOT_FOUND;
-	const message = 'Não identificado.';
+function responseUserNotFound(res: Response) {
+	const status = HttpStatusCode.BAD_REQUEST;
+	const message = 'Usuário não encontrado.';
 	const error = true;
 	const body = {};
 
@@ -15,4 +15,4 @@ function responseNotFound(res: Response) {
 	});
 }
 
-export default responseNotFound;
+export default responseUserNotFound;

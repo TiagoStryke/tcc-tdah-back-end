@@ -4,6 +4,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import notFoundErrorMiddleware from './middlewares/NotFoundErrorMiddleware';
 import runTimeErrorMiddleware from './middlewares/RunTimeErrorMiddleware';
+import userNotFoundErrorMiddleware from './middlewares/UserNotFoundErrorMiddleware';
 
 class App {
 	public app: express.Application;
@@ -17,6 +18,7 @@ class App {
 		this.initExpressJson();
 		this.initControllers(controllers);
 		this.initNotFoundErrorMiddleware();
+		this.initUserNotFoundErrorMiddleware();
 		this.initRunTimeErrorMiddleware();
 	}
 
@@ -48,6 +50,10 @@ class App {
 
 	private initNotFoundErrorMiddleware() {
 		this.app.all('*', notFoundErrorMiddleware);
+	}
+
+	private initUserNotFoundErrorMiddleware() {
+		this.app.all('*', userNotFoundErrorMiddleware);
 	}
 
 	private initRunTimeErrorMiddleware() {
