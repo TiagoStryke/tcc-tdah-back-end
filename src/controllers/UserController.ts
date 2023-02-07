@@ -128,6 +128,12 @@ class UserController extends Controller {
 				user.password = await bcrypt.hash(req.body.password, salt);
 			}
 
+			if (req.body.profilePhoto) {
+				user.profilePhoto = req.body.profilePhoto;
+
+				await user.save();
+			}
+
 			if (user) {
 				Object.assign(user, req.body);
 				await user.save();

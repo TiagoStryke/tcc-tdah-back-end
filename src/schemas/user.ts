@@ -1,5 +1,6 @@
 import { Document, Schema, model } from 'mongoose';
 
+import DefaultProfilePhoto from '../helpers/Defaultb64ProfilePhoto';
 import bcrypt from 'bcrypt';
 
 export interface UserInterface extends Document {
@@ -8,6 +9,7 @@ export interface UserInterface extends Document {
 	password: string;
 	createdAt: Date;
 	generatedCodes: string[];
+	profilePhoto: string;
 }
 
 const UserSchema = new Schema(
@@ -33,6 +35,11 @@ const UserSchema = new Schema(
 		generatedCodes: {
 			type: [String],
 			default: [],
+		},
+		profilePhoto: {
+			type: String,
+			required: false,
+			default: DefaultProfilePhoto,
 		},
 	},
 	{ versionKey: false }
