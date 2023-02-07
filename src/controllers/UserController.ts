@@ -117,8 +117,23 @@ class UserController extends Controller {
 			const { id } = req.params;
 			if (ValidationService.validateId(id, next)) return;
 
-			const user = await User.findByIdAndUpdate(id, req.body, () => {});
-			if (user) return responseOk(res, user);
+			const user = await User.findById(id);
+			if (!user) {
+				next(new NoContentException());
+				return;
+			}
+
+			if (req.body.password) {
+				const salt = await bcrypt.genSalt(10);
+				user.password = await bcrypt.hash(req.body.password, salt);
+			}
+
+			if (user) {
+				Object.assign(user, req.body);
+				await user.save();
+
+				return responseOk(res, user);
+			}
 
 			next(new NoContentException());
 		} catch (error) {
@@ -146,40 +161,6 @@ class UserController extends Controller {
 			next(new ServerErrorException(error));
 		}
 	}
-
-	// private async insertGeneratedCode(
-	// 	req: Request,
-	// 	res: Response,
-	// 	next: NextFunction
-	// ): Promise<Response | undefined> {
-	// 	try {
-	// 		const { id } = req.params;
-	// 		const { generatedCode } = req.body;
-	// 		if (generatedCode === undefined) {
-	// 			return;
-	// 		}
-
-	// 		if (ValidationService.validateId(id, next)) return;
-
-	// 		const user = await User.findByIdAndUpdate(
-	// 			id,
-	// 			{ $push: { generatedCodes: generatedCode } },
-	// 			() => {}
-	// 		);
-
-	// 		if (user) {
-	// 			if (user.generatedCodes.length >= 10) {
-	// 				user.generatedCodes.splice(0, user.generatedCodes.length - 10);
-	// 				await user.save();
-	// 			}
-	// 			return responseOk(res, user);
-	// 		}
-
-	// 		next(new NoContentException());
-	// 	} catch (error) {
-	// 		next(new ServerErrorException(error));
-	// 	}
-	// }
 
 	private async insertGeneratedCode(
 		req: Request,
