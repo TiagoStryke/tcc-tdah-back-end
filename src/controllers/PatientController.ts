@@ -47,7 +47,9 @@ class PatientController extends Controller {
 			const responsibleUser = await User.findById(id);
 			if (!responsibleUser) next(new NoContentException());
 			if (responsibleUser) {
-				patients = await Patient.find({ responsible: responsibleUser._id });
+				patients = await Patient.find({
+					responsible: responsibleUser._id,
+				}).sort({ name: 1 });
 			}
 
 			if (patients) return responseOk(res, patients);
@@ -69,13 +71,14 @@ class PatientController extends Controller {
 				return;
 			}
 			const userIndex = user.generatedCodes.indexOf(req.body.codLogin);
-			user.generatedCodes.splice(userIndex, 1);
-			await user.save();
 
 			const patient = await Patient.create({
 				...req.body,
 				responsible: user._id,
 			});
+
+			user.generatedCodes.splice(userIndex, 1);
+			await user.save();
 
 			return responseCreate(res, patient);
 		} catch (error) {
