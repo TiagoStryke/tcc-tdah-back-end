@@ -49,6 +49,7 @@ const PatientSchema = new Schema(
 		responsible: {
 			type: Schema.Types.ObjectId,
 			ref: 'User',
+			required: [true, 'Responsável obrigatório'],
 		},
 	},
 	{ versionKey: false }
