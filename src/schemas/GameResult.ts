@@ -26,6 +26,10 @@ const GameResultSchema = new Schema(
 			type: Object,
 			required: [true, 'Resultados são obrigatórios'],
 		},
+		sound: {
+			type: String,
+			required: [true, 'Presença de estimulos sonoros é obrigatória'],
+		},
 		date: {
 			type: Date,
 			default: Date.now,

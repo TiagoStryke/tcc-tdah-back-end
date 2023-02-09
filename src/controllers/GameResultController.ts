@@ -14,8 +14,12 @@ class GameResultController extends Controller {
 	protected initRoutes(): void {
 		this.router.post(this.path, this.create);
 		this.router.get(
-			`${this.path}/patient/:patientId/game/:gameId`,
+			`${this.path}/patient/:patientId/game/:gameId/:initialDate/:finalDate/:sound`,
 			this.listByPatientIdAndGameId
+		);
+		this.router.get(
+			`${this.path}/patient/:patientId/game/:gameId/:initialDate/:finalDate/:sound/average`,
+			this.listAverageByPatientIdAndGameIdDatePeriod
 		);
 	}
 
@@ -25,11 +29,12 @@ class GameResultController extends Controller {
 		next: NextFunction
 	): Promise<Response | undefined> {
 		try {
-			const { patientId, gameId, results } = req.body;
+			const { patientId, gameId, results, sound } = req.body;
 			const gameResult = await GameResult.create({
 				patientId,
 				gameId,
 				results,
+				sound,
 			});
 			return responseCreate(res, gameResult);
 		} catch (error) {
@@ -43,15 +48,58 @@ class GameResultController extends Controller {
 		next: NextFunction
 	): Promise<Response | undefined> {
 		try {
-			const { patientId, gameId } = req.params;
+			const { patientId, gameId, initialDate, finalDate, sound } = req.params;
 			let gameResults: any = [];
 
 			gameResults = await GameResult.find({
 				patientId,
 				gameId,
+				sound,
+				date: { $gte: new Date(initialDate), $lte: new Date(finalDate) },
 			});
 
 			if (gameResults.length) return responseOk(res, gameResults);
+			next(new NoContentException());
+		} catch (error) {
+			next(new ServerErrorException(error));
+		}
+	}
+
+	private async listAverageByPatientIdAndGameIdDatePeriod(
+		req: Request,
+		res: Response,
+		next: NextFunction
+	): Promise<Response | undefined> {
+		try {
+			const { patientId, gameId, initialDate, finalDate, sound } = req.params;
+			let gameResults: any = [];
+
+			gameResults = await GameResult.find({
+				patientId,
+				gameId,
+				sound,
+				date: { $gte: new Date(initialDate), $lte: new Date(finalDate) },
+			});
+
+			const averageResults = gameResults.reduce((acc, curr) => {
+				for (const key in curr.results) {
+					if (acc[key]) {
+						acc[key].push(curr.results[key]);
+					} else {
+						acc[key] = [curr.results[key]];
+					}
+				}
+				return acc;
+			}, {});
+
+			const avgResults = {};
+			for (const key in averageResults) {
+				avgResults[key] =
+					averageResults[key].reduce((a, b) => a + b, 0) /
+					averageResults[key].length;
+			}
+
+			if (gameResults.length) return responseOk(res, avgResults);
 			next(new NoContentException());
 		} catch (error) {
 			next(new ServerErrorException(error));

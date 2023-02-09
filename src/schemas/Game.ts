@@ -5,6 +5,7 @@ export interface GameInterface extends Document {
 	resultsStructure: {
 		fieldName: string;
 		fieldType: string;
+		portugueseTitle: string;
 	}[];
 }
 
@@ -23,6 +24,10 @@ const GameSchema = new Schema(
 				fieldType: {
 					type: String,
 					required: [true, 'Tipo do campo obrigatório'],
+				},
+				portugueseTitle: {
+					type: String,
+					required: [true, 'Título em português obrigatório'],
 				},
 			},
 		],
