@@ -12,6 +12,7 @@ class GameController extends Controller {
 		super('/game');
 	}
 	protected initRoutes(): void {
+		this.router.get(this.path, this.list);
 		this.router.post(this.path, this.create);
 		this.router.delete(`${this.path}/:id`, this.delete);
 	}
@@ -43,6 +44,20 @@ class GameController extends Controller {
 				return;
 			}
 			return responseOk(res, game);
+		} catch (error) {
+			next(new ServerErrorException(error));
+		}
+	}
+
+	private async list(
+		req: Request,
+		res: Response,
+		next: NextFunction
+	): Promise<Response | undefined> {
+		try {
+			const games = await Game.find();
+			if (games.length) return responseOk(res, games);
+			next(new NoContentException());
 		} catch (error) {
 			next(new ServerErrorException(error));
 		}
