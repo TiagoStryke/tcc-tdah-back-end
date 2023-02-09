@@ -1,0 +1,33 @@
+import { Document, Schema, model } from 'mongoose';
+
+export interface GameInterface extends Document {
+	name: string;
+	resultsStructure: {
+		fieldName: string;
+		fieldType: string;
+	}[];
+}
+
+const GameSchema = new Schema(
+	{
+		name: {
+			type: String,
+			required: [true, 'Nome obrigatório'],
+		},
+		resultsStructure: [
+			{
+				fieldName: {
+					type: String,
+					required: [true, 'Nome do campo obrigatório'],
+				},
+				fieldType: {
+					type: String,
+					required: [true, 'Tipo do campo obrigatório'],
+				},
+			},
+		],
+	},
+	{ versionKey: false }
+);
+
+export default model<GameInterface>('Game', GameSchema);
