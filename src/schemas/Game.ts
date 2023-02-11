@@ -25,6 +25,10 @@ const GameSchema = new Schema(
 					type: String,
 					required: [true, 'Tipo do campo obrigatório'],
 				},
+				measuredIn: {
+					type: String,
+					required: [true, 'Unidade de medida obrigatória'],
+				},
 				portugueseTitle: {
 					type: String,
 					required: [true, 'Título em português obrigatório'],

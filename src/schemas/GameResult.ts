@@ -32,7 +32,11 @@ const GameResultSchema = new Schema(
 		},
 		date: {
 			type: Date,
-			default: Date.now,
+			default: function () {
+				const offset = new Date().getTimezoneOffset();
+				const localTime = new Date(Date.now() - offset * 60 * 1000);
+				return localTime;
+			},
 			required: [true, 'Data é obrigatória'],
 		},
 	},
