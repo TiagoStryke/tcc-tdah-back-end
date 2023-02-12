@@ -41,6 +41,10 @@ const UserSchema = new Schema(
 			required: false,
 			default: DefaultProfilePhoto,
 		},
+		privilege: {
+			type: String,
+			default: 'user',
+		},
 	},
 	{ versionKey: false }
 );

@@ -17,6 +17,7 @@ class PatientController extends Controller {
 		this.router.get(this.path, this.list);
 		this.router.post(this.path, this.create);
 		this.router.get(`${this.path}/responsible/:id`, this.listByResponsibleId);
+		this.router.delete(`${this.path}/:id`, this.delete);
 	}
 
 	private async list(
@@ -53,6 +54,27 @@ class PatientController extends Controller {
 			}
 
 			if (patients) return responseOk(res, patients);
+			next(new NoContentException());
+		} catch (error) {
+			next(new ServerErrorException(error));
+		}
+	}
+
+	private async delete(
+		req: Request,
+		res: Response,
+		next: NextFunction
+	): Promise<Response | undefined> {
+		try {
+			const { id } = req.params;
+			if (ValidationService.validateId(id, next)) return;
+
+			const patient = await Patient.findById(id);
+			if (patient) {
+				patient.deleteOne();
+				return responseOk(res, patient);
+			}
+
 			next(new NoContentException());
 		} catch (error) {
 			next(new ServerErrorException(error));
