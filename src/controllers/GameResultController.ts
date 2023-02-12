@@ -19,10 +19,6 @@ class GameResultController extends Controller {
 			this.listByPatientIdAndGameId
 		);
 		this.router.get(
-			`${this.path}/patient/:patientId/game/:gameId/:initialDate/:finalDate/:sound/average`,
-			this.listAverageByPatientIdAndGameIdDatePeriod
-		);
-		this.router.get(
 			`${this.path}/patient/:patientId/game/:gameId/:initialDate/:finalDate/:sound/monthaverage`,
 			this.listAverageMonthByPatientIdAndGameId
 		);
@@ -67,48 +63,19 @@ class GameResultController extends Controller {
 				date: { $gte: new Date(initialDate), $lte: new Date(finalDate) },
 			});
 
-			if (gameResults.length) return responseOk(res, gameResults);
-			next(new NoContentException());
-		} catch (error) {
-			next(new ServerErrorException(error));
-		}
-	}
-
-	private async listAverageByPatientIdAndGameIdDatePeriod(
-		req: Request,
-		res: Response,
-		next: NextFunction
-	): Promise<Response | undefined> {
-		try {
-			const { patientId, gameId, initialDate, finalDate, sound } = req.params;
-			let gameResults: any = [];
-
-			gameResults = await GameResult.find({
-				patientId,
-				gameId,
-				sound,
-				date: { $gte: new Date(initialDate), $lte: new Date(finalDate) },
+			gameResults = gameResults.map((result) => {
+				return {
+					daysLogged: 1,
+					_id: result._id,
+					patientId: result.patientId,
+					gameId: result.gameId,
+					results: result.results,
+					sound: result.sound,
+					date: result.date,
+				};
 			});
 
-			const averageResults = gameResults.reduce((acc, curr) => {
-				for (const key in curr.results) {
-					if (acc[key]) {
-						acc[key].push(curr.results[key]);
-					} else {
-						acc[key] = [curr.results[key]];
-					}
-				}
-				return acc;
-			}, {});
-
-			const avgResults = {};
-			for (const key in averageResults) {
-				avgResults[key] =
-					averageResults[key].reduce((a, b) => a + b, 0) /
-					averageResults[key].length;
-			}
-
-			if (gameResults.length) return responseOk(res, avgResults);
+			if (gameResults.length) return responseOk(res, gameResults);
 			next(new NoContentException());
 		} catch (error) {
 			next(new ServerErrorException(error));
@@ -148,14 +115,29 @@ class GameResultController extends Controller {
 				return acc;
 			}, {});
 
-			const avgResults = {};
+			const avgResults: any = [];
 			for (const key in averageResults) {
-				avgResults[key] = {};
+				const avgResult = {
+					daysLogged: 0,
+					results: {
+						'month-year': key,
+					},
+				};
 				for (const resultKey in averageResults[key]) {
-					avgResults[key][resultKey] =
+					avgResult.results[resultKey] =
 						averageResults[key][resultKey].reduce((a, b) => a + b, 0) /
 						averageResults[key][resultKey].length;
 				}
+				avgResult.daysLogged = new Set(
+					gameResults
+						.filter(
+							(result) =>
+								result.date.getMonth() + 1 === parseInt(key.split('-')[0]) &&
+								result.date.getFullYear() === parseInt(key.split('-')[1])
+						)
+						.map((result) => result.date.toDateString())
+				).size;
+				avgResults.push(avgResult);
 			}
 
 			if (gameResults.length) return responseOk(res, avgResults);
@@ -181,6 +163,11 @@ class GameResultController extends Controller {
 				date: { $gte: new Date(initialDate), $lte: new Date(finalDate) },
 			});
 
+			const uniqueDates = new Set(
+				gameResults.map((result) => result.date.getFullYear())
+			);
+			const daysLogged = uniqueDates.size;
+
 			const averageResults = gameResults.reduce((acc, curr) => {
 				const currYear = curr.date.getFullYear();
 				const key = `${currYear}`;
@@ -197,14 +184,18 @@ class GameResultController extends Controller {
 				return acc;
 			}, {});
 
-			const avgResults = {};
+			const avgResults: Record<string, any>[] = [];
 			for (const key in averageResults) {
-				avgResults[key] = {};
+				const avgResult: Record<string, any> = {};
+				avgResult.daysLogged = daysLogged;
+				avgResult.results = {};
+				avgResult.results['year'] = key;
 				for (const resultKey in averageResults[key]) {
-					avgResults[key][resultKey] =
+					avgResult.results[resultKey] =
 						averageResults[key][resultKey].reduce((a, b) => a + b, 0) /
 						averageResults[key][resultKey].length;
 				}
+				avgResults.push(avgResult);
 			}
 
 			if (gameResults.length) return responseOk(res, avgResults);
@@ -216,3 +207,31 @@ class GameResultController extends Controller {
 }
 
 export default GameResultController;
+[
+	{
+		daysLogged: 1,
+		_id: '63e68c726756465c34e45087',
+		patientId: '63e3054fb899d71d20a7a328',
+		gameId: '63e675e9ae43555458934434',
+		results: {
+			timeToClick: 10,
+			totalTime: 200,
+			totalPoints: 600,
+		},
+		sound: 'true',
+		date: '2023-02-09T18:26:58.649Z',
+	},
+	{
+		daysLogged: 1,
+		_id: '63e6a99b3fd5f611c045d04f',
+		patientId: '63e3054fb899d71d20a7a328',
+		gameId: '63e675e9ae43555458934434',
+		results: {
+			timeToClick: 20,
+			totalTime: 200,
+			totalPoints: 600,
+		},
+		sound: 'true',
+		date: '2023-01-10T17:31:23.036Z',
+	},
+];
