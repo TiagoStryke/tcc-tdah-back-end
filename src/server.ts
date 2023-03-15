@@ -10,5 +10,9 @@ const app = new App([
 	new GameController(),
 	new GameResultController(),
 ]);
+async function startServer() {
+	await app.generateSwaggerJson();
+	app.listen(3333);
+}
 
-app.listen(3333);
+startServer();

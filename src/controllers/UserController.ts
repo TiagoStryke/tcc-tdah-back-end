@@ -38,7 +38,7 @@ class UserController extends Controller {
 	}
 	/**
 	 * @swagger
-	 * /login:
+	 * /user/login:
 	 *   post:
 	 *     summary: Login to the application
 	 *     tags:
@@ -110,7 +110,7 @@ class UserController extends Controller {
 	}
 	/**
 	 * @swagger
-	 * /users:
+	 * /user:
 	 *   get:
 	 *     summary: Retrieves a list of all users.
 	 *     tags:
@@ -145,7 +145,7 @@ class UserController extends Controller {
 	}
 	/**
 	 * @swagger
-	 * /users/{id}:
+	 * /user/{id}:
 	 *   get:
 	 *     summary: Get a user by ID
 	 *     tags: [Users]
@@ -186,7 +186,7 @@ class UserController extends Controller {
 	}
 	/**
 	 * @swagger
-	 * /api/users:
+	 * /user:
 	 *   post:
 	 *     summary: Create a new user.
 	 *     requestBody:
@@ -230,7 +230,7 @@ class UserController extends Controller {
 	 * Update an existing user by ID
 	 *
 	 * @swagger
-	 * /users/{id}:
+	 * /user/{id}:
 	 *   put:
 	 *     summary: Update an existing user by ID
 	 *     tags:
@@ -310,7 +310,7 @@ class UserController extends Controller {
 	}
 	/**
 	 * @swagger
-	 * /users/{id}:
+	 * /user/{id}:
 	 *   delete:
 	 *     summary: Delete a user by ID
 	 *     description: Delete a user by ID
@@ -375,7 +375,7 @@ class UserController extends Controller {
 	}
 	/**
 	 * @swagger
-	 * /users/{id}/generated-code:
+	 * /user/{id}/generated-code:
 	 *   post:
 	 *     summary: Insert generated code for a user.
 	 *     description: Inserts an array of generated codes for a specific user. The generated codes array will be limited to 10 items, keeping only the last 10 codes added.

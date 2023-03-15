@@ -36,7 +36,7 @@ class GameResultController extends Controller {
 	/**
 	 * Creates a new game result.
 	 * @swagger
-	 * /game-results:
+	 * /game-result:
 	 *   post:
 	 *     summary: Creates a new game result.
 	 *     tags:
@@ -101,7 +101,7 @@ class GameResultController extends Controller {
 	}
 	/**
 	 * @swagger
-	 * /api/game-results/{patientId}/{gameId}/{initialDate}/{finalDate}/{sound}:
+	 * /game-result/{patientId}/{gameId}/{initialDate}/{finalDate}/{sound}:
 	 *   get:
 	 *     summary: Get game results for a specific patient and game.
 	 *     description: Retrieves all game results for a specific patient and game within a date range, filtered by sound.
@@ -191,7 +191,7 @@ class GameResultController extends Controller {
 	}
 	/**
 	 * @swagger
-	 * /average-month-results/{patientId}/{gameId}/{initialDate}/{finalDate}/{sound}:
+	 * /game-result/average-month-results/{patientId}/{gameId}/{initialDate}/{finalDate}/{sound}:
 	 *   get:
 	 *     summary: Get the average monthly results of a patient's game
 	 *     description: Retrieve the average monthly results of a patient's game for a given period of time.
@@ -327,7 +327,7 @@ class GameResultController extends Controller {
 	}
 	/**
 	 * @swagger
-	 * /api/games/{gameId}/results/average/year/{patientId}:
+	 * /game-result/{gameId}/results/average/year/{patientId}:
 	 *   get:
 	 *     summary: Get average results for a game by year for a patient
 	 *     description: Returns the average results for a game by year for a given patient ID and game ID within a specified date range.

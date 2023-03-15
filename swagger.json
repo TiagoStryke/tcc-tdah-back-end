@@ -1,0 +1,947 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Projeto TCC - API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/game": {
+      "post": {
+        "summary": "Create a new game",
+        "tags": [
+          "Games"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The name of the game"
+                  },
+                  "resultsStructure": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "The structure of the game results"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "get": {
+        "summary": "Get all games",
+        "tags": [
+          "Games"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/game/{id}": {
+      "delete": {
+        "summary": "Delete a game by ID",
+        "tags": [
+          "Games"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The ID of the game to delete"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/game-result": {
+      "post": {
+        "summary": "Creates a new game result.",
+        "tags": [
+          "GameResults"
+        ],
+        "description": "Creates a new game result.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "patientId": {
+                    "type": "string",
+                    "description": "The ID of the patient who played the game."
+                  },
+                  "gameId": {
+                    "type": "string",
+                    "description": "The ID of the game played."
+                  },
+                  "results": {
+                    "type": "object",
+                    "description": "The results of the game."
+                  },
+                  "sound": {
+                    "type": "boolean",
+                    "description": "Whether sound was enabled during the game."
+                  }
+                },
+                "example": {
+                  "patientId": "abc123",
+                  "gameId": "def456",
+                  "results": {
+                    "score": 10,
+                    "level": 3
+                  },
+                  "sound": true
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The created game result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameResult"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerErrorException"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/game-result/{patientId}/{gameId}/{initialDate}/{finalDate}/{sound}": {
+      "get": {
+        "summary": "Get game results for a specific patient and game.",
+        "description": "Retrieves all game results for a specific patient and game within a date range, filtered by sound.",
+        "tags": [
+          "GameResults"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "patientId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The ID of the patient to retrieve game results for."
+          },
+          {
+            "in": "path",
+            "name": "gameId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The ID of the game to retrieve results for."
+          },
+          {
+            "in": "path",
+            "name": "initialDate",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "required": true,
+            "description": "The initial date of the range to retrieve results for."
+          },
+          {
+            "in": "path",
+            "name": "finalDate",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "required": true,
+            "description": "The final date of the range to retrieve results for."
+          },
+          {
+            "in": "path",
+            "name": "sound",
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "description": "The sound to filter the results by (optional)."
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "The list of game results for the specified patient and game.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameResult"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "The requested game results were not found."
+          },
+          "500": {
+            "description": "An error occurred while processing the request."
+          }
+        }
+      }
+    },
+    "/game-result/average-month-results/{patientId}/{gameId}/{initialDate}/{finalDate}/{sound}": {
+      "get": {
+        "summary": "Get the average monthly results of a patient's game",
+        "description": "Retrieve the average monthly results of a patient's game for a given period of time.",
+        "tags": [
+          "GameResults"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "patientId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The ID of the patient to retrieve the results for"
+          },
+          {
+            "in": "path",
+            "name": "gameId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The ID of the game to retrieve the results for"
+          },
+          {
+            "in": "path",
+            "name": "initialDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "required": true,
+            "description": "The start date of the period to retrieve the results for (YYYY-MM-DD)"
+          },
+          {
+            "in": "path",
+            "name": "finalDate",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "required": true,
+            "description": "The end date of the period to retrieve the results for (YYYY-MM-DD)"
+          },
+          {
+            "in": "path",
+            "name": "sound",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The sound to retrieve the results for (e.g. 'sound1', 'sound2')"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The average monthly results for the given patient and game",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "daysLogged": {
+                        "type": "integer",
+                        "description": "The number of days with logged results for this month"
+                      },
+                      "results": {
+                        "type": "object",
+                        "properties": {
+                          "month-year": {
+                            "type": "string",
+                            "description": "The month and year of the average results (e.g. '01-2022')"
+                          },
+                          "metric1": {
+                            "type": "number",
+                            "description": "The average value of metric1 for this month"
+                          },
+                          "metric2": {
+                            "type": "number",
+                            "description": "The average value of metric2 for this month"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No content available for the given parameters"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/game-result/{gameId}/results/average/year/{patientId}": {
+      "get": {
+        "summary": "Get average results for a game by year for a patient",
+        "description": "Returns the average results for a game by year for a given patient ID and game ID within a specified date range.",
+        "tags": [
+          "GameResults"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "gameId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The ID of the game."
+          },
+          {
+            "in": "path",
+            "name": "patientId",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The ID of the patient."
+          },
+          {
+            "in": "query",
+            "name": "initialDate",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The initial date for the search in YYYY-MM-DD format."
+          },
+          {
+            "in": "query",
+            "name": "finalDate",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The final date for the search in YYYY-MM-DD format."
+          },
+          {
+            "in": "query",
+            "name": "sound",
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "description": "The sound used in the game."
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "Average results for a game by year for a patient",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "daysLogged": {
+                    "type": "number",
+                    "description": "The number of days logged for the patient."
+                  },
+                  "results": {
+                    "type": "object",
+                    "properties": {
+                      "year": {
+                        "type": "string",
+                        "description": "The year."
+                      },
+                      "[ resultKey ]": {
+                        "type": "number",
+                        "description": "The average result for the specified key."
+                      }
+                    }
+                  },
+                  "description": "The average results for the specified year."
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No content found for the specified query."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/patient": {
+      "get": {
+        "summary": "Get all patients",
+        "tags": [
+          "Patient"
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of patients",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Patient"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No patients found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new patient",
+        "tags": [
+          "Patient"
+        ],
+        "requestBody": {
+          "description": "Patient object to be created",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatientRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Returns the created patient",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Patient"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "User not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/patient/responsible/{id}": {
+      "get": {
+        "summary": "Get all patients assigned to a responsible user",
+        "tags": [
+          "Patient"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID of the responsible user"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns an array of patients",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Patient"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No patients found for the responsible user"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/patient/{id}": {
+      "delete": {
+        "summary": "Deletes a patient by ID.",
+        "description": "Deletes a patient by ID.",
+        "tags": [
+          "Patient"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "description": "ID of the patient to delete.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The deleted patient.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Patient"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No patient found for the given ID."
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerErrorException"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/login": {
+      "post": {
+        "summary": "Login to the application",
+        "tags": [
+          "Authentication"
+        ],
+        "requestBody": {
+          "description": "User credentials to authenticate",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password"
+                  }
+                },
+                "example": {
+                  "email": "john@example.com",
+                  "password": "password123"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Returns a JSON Web Token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "description": "JSON Web Token",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          }
+        }
+      }
+    },
+    "/user": {
+      "get": {
+        "summary": "Retrieves a list of all users.",
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of users.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No users found."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "post": {
+        "summary": "Create a new user.",
+        "requestBody": {
+          "description": "User object that needs to be created.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/User"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "201": {
+            "description": "User created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/{id}": {
+      "get": {
+        "summary": "Get a user by ID",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "User ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No content found for the specified ID"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      },
+      "put": {
+        "summary": "Update an existing user by ID",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of the user to update",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "password",
+            "in": "body",
+            "description": "New password for the user (optional)",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "password": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          {
+            "name": "profilePhoto",
+            "in": "body",
+            "description": "New profile photo for the user (optional)",
+            "required": false,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "profilePhoto": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User updated successfully",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          },
+          "204": {
+            "description": "No user found for the given ID"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a user by ID",
+        "description": "Delete a user by ID",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "ID of the user to delete"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "_id": {
+                      "type": "string",
+                      "description": "ID of the deleted user"
+                    },
+                    "email": {
+                      "type": "string",
+                      "description": "Email of the deleted user"
+                    },
+                    "password": {
+                      "type": "string",
+                      "description": "Hashed password of the deleted user"
+                    },
+                    "profilePhoto": {
+                      "type": "string",
+                      "description": "URL of the profile photo of the deleted user"
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "description": "Date of creation of the deleted user"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "description": "Date of last update of the deleted user"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "No content found with the specified ID"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/user/{id}/generated-code": {
+      "post": {
+        "summary": "Insert generated code for a user.",
+        "description": "Inserts an array of generated codes for a specific user. The generated codes array will be limited to 10 items, keeping only the last 10 codes added.",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "description": "The ID of the user to insert the generated codes for."
+          },
+          {
+            "in": "body",
+            "name": "generatedCode",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "required": true,
+            "description": "An array of generated codes to insert for the user."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The updated user with the new generated codes array.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "The requested user was not found."
+          },
+          "500": {
+            "description": "An error occurred while processing the request."
+          }
+        }
+      }
+    }
+  },
+  "components": {},
+  "tags": [
+    {
+      "name": "Games",
+      "description": "API for managing games"
+    },
+    {
+      "name": "GameResults",
+      "description": "API for managing game results"
+    },
+    {
+      "name": "Patient",
+      "description": "API for managing patients"
+    },
+    {
+      "name": "Users",
+      "description": "API for managing users"
+    }
+  ]
+}
