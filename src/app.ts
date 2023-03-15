@@ -4,6 +4,8 @@ import express from 'express';
 import mongoose from 'mongoose';
 import notFoundErrorMiddleware from './middlewares/NotFoundErrorMiddleware';
 import runTimeErrorMiddleware from './middlewares/RunTimeErrorMiddleware';
+import specs from './swagger';
+import swaggerUi from 'swagger-ui-express';
 import userNotFoundErrorMiddleware from './middlewares/UserNotFoundErrorMiddleware';
 
 class App {
@@ -17,6 +19,7 @@ class App {
 		this.connectDatabase();
 		this.initExpressJson();
 		this.initControllers(controllers);
+		this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 		this.initNotFoundErrorMiddleware();
 		this.initUserNotFoundErrorMiddleware();
 		this.initRunTimeErrorMiddleware();

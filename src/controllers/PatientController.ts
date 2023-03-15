@@ -9,6 +9,13 @@ import ValidationService from '../services/ValidationService';
 import responseCreate from '../responses/ResponseCreate';
 import responseOk from '../responses/ResponseOk';
 
+/**
+ * PatientController class
+ * @swagger
+ * tags:
+ *   name: Patient
+ *   description: API for managing patients
+ */
 class PatientController extends Controller {
 	constructor() {
 		super('/patient');
@@ -19,7 +26,26 @@ class PatientController extends Controller {
 		this.router.get(`${this.path}/responsible/:id`, this.listByResponsibleId);
 		this.router.delete(`${this.path}/:id`, this.delete);
 	}
-
+	/**
+	 * @swagger
+	 * /patient:
+	 *   get:
+	 *     summary: Get all patients
+	 *     tags: [Patient]
+	 *     responses:
+	 *       200:
+	 *         description: Returns an array of patients
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: array
+	 *               items:
+	 *                 $ref: '#/components/schemas/Patient'
+	 *       204:
+	 *         description: No patients found
+	 *       500:
+	 *         description: Server error
+	 */
 	private async list(
 		req: Request,
 		res: Response,
@@ -34,7 +60,33 @@ class PatientController extends Controller {
 			next(new ServerErrorException(error));
 		}
 	}
-
+	/**
+	 * @swagger
+	 * /patient/responsible/{id}:
+	 *   get:
+	 *     summary: Get all patients assigned to a responsible user
+	 *     tags: [Patient]
+	 *     parameters:
+	 *       - in: path
+	 *         name: id
+	 *         required: true
+	 *         schema:
+	 *           type: string
+	 *         description: ID of the responsible user
+	 *     responses:
+	 *       200:
+	 *         description: Returns an array of patients
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: array
+	 *               items:
+	 *                 $ref: '#/components/schemas/Patient'
+	 *       204:
+	 *         description: No patients found for the responsible user
+	 *       500:
+	 *         description: Server error
+	 */
 	private async listByResponsibleId(
 		req: Request,
 		res: Response,
@@ -59,7 +111,38 @@ class PatientController extends Controller {
 			next(new ServerErrorException(error));
 		}
 	}
-
+	/**
+	 * Deletes a patient by ID.
+	 * @swagger
+	 * /patient/{id}:
+	 *   delete:
+	 *     summary: Deletes a patient by ID.
+	 *     description: Deletes a patient by ID.
+	 *     tags:
+	 *       - Patient
+	 *     parameters:
+	 *       - in: path
+	 *         name: id
+	 *         description: ID of the patient to delete.
+	 *         required: true
+	 *         schema:
+	 *           type: string
+	 *     responses:
+	 *       200:
+	 *         description: The deleted patient.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               $ref: '#/components/schemas/Patient'
+	 *       204:
+	 *         description: No patient found for the given ID.
+	 *       500:
+	 *         description: Internal server error.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               $ref: '#/components/schemas/ServerErrorException'
+	 */
 	private async delete(
 		req: Request,
 		res: Response,
@@ -80,7 +163,31 @@ class PatientController extends Controller {
 			next(new ServerErrorException(error));
 		}
 	}
-
+	/**
+	 * @swagger
+	 * /patient:
+	 *   post:
+	 *     summary: Create a new patient
+	 *     tags: [Patient]
+	 *     requestBody:
+	 *       description: Patient object to be created
+	 *       required: true
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             $ref: '#/components/schemas/PatientRequest'
+	 *     responses:
+	 *       201:
+	 *         description: Returns the created patient
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               $ref: '#/components/schemas/Patient'
+	 *       204:
+	 *         description: User not found
+	 *       500:
+	 *         description: Server error
+	 */
 	private async create(
 		req: Request,
 		res: Response,

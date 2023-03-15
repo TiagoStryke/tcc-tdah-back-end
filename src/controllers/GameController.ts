@@ -7,6 +7,12 @@ import ServerErrorException from '../errors/ServerErrorException';
 import responseCreate from '../responses/ResponseCreate';
 import responseOk from '../responses/ResponseOk';
 
+/**
+ * @swagger
+ * tags:
+ *   name: Games
+ *   description: API for managing games
+ */
 class GameController extends Controller {
 	constructor() {
 		super('/game');
@@ -16,7 +22,33 @@ class GameController extends Controller {
 		this.router.post(this.path, this.create);
 		this.router.delete(`${this.path}/:id`, this.delete);
 	}
-
+	/**
+	 * @swagger
+	 * /game:
+	 *   post:
+	 *     summary: Create a new game
+	 *     tags: [Games]
+	 *     requestBody:
+	 *       required: true
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             type: object
+	 *             properties:
+	 *               name:
+	 *                 type: string
+	 *                 description: The name of the game
+	 *               resultsStructure:
+	 *                 type: array
+	 *                 items:
+	 *                   type: string
+	 *                 description: The structure of the game results
+	 *     responses:
+	 *       201:
+	 *         description: Created
+	 *       500:
+	 *         description: Internal Server Error
+	 */
 	private async create(
 		req: Request,
 		res: Response,
@@ -30,7 +62,28 @@ class GameController extends Controller {
 			next(new ServerErrorException(error));
 		}
 	}
-
+	/**
+	 * @swagger
+	 * /game/{id}:
+	 *   delete:
+	 *     summary: Delete a game by ID
+	 *     tags: [Games]
+	 *     parameters:
+	 *       - in: path
+	 *         name: id
+	 *         required: true
+	 *         schema:
+	 *           type: string
+	 *           format: uuid
+	 *         description: The ID of the game to delete
+	 *     responses:
+	 *       200:
+	 *         description: OK
+	 *       204:
+	 *         description: No Content
+	 *       500:
+	 *         description: Internal Server Error
+	 */
 	private async delete(
 		req: Request,
 		res: Response,
@@ -48,7 +101,20 @@ class GameController extends Controller {
 			next(new ServerErrorException(error));
 		}
 	}
-
+	/**
+	 * @swagger
+	 * /game:
+	 *   get:
+	 *     summary: Get all games
+	 *     tags: [Games]
+	 *     responses:
+	 *       200:
+	 *         description: OK
+	 *       204:
+	 *         description: No Content
+	 *       500:
+	 *         description: Internal Server Error
+	 */
 	private async list(
 		req: Request,
 		res: Response,

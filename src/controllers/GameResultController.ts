@@ -8,6 +8,12 @@ import moment from 'moment';
 import responseCreate from '../responses/ResponseCreate';
 import responseOk from '../responses/ResponseOk';
 
+/**
+ * @swagger
+ *	tags:
+ *   name: GameResults
+ *   description: API for managing game results
+ */
 class GameResultController extends Controller {
 	constructor() {
 		super('/game-result');
@@ -27,6 +33,53 @@ class GameResultController extends Controller {
 			this.listAverageYearByPatientIdAndGameId
 		);
 	}
+	/**
+	 * Creates a new game result.
+	 * @swagger
+	 * /game-results:
+	 *   post:
+	 *     summary: Creates a new game result.
+	 *     tags:
+	 *       - GameResults
+	 *     description: Creates a new game result.
+	 *     requestBody:
+	 *       required: true
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             type: object
+	 *             properties:
+	 *               patientId:
+	 *                 type: string
+	 *                 description: The ID of the patient who played the game.
+	 *               gameId:
+	 *                 type: string
+	 *                 description: The ID of the game played.
+	 *               results:
+	 *                 type: object
+	 *                 description: The results of the game.
+	 *               sound:
+	 *                 type: boolean
+	 *                 description: Whether sound was enabled during the game.
+	 *             example:
+	 *               patientId: abc123
+	 *               gameId: def456
+	 *               results: { "score": 10, "level": 3 }
+	 *               sound: true
+	 *     responses:
+	 *       201:
+	 *         description: The created game result.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               $ref: '#/components/schemas/GameResult'
+	 *       500:
+	 *         description: Internal server error.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               $ref: '#/components/schemas/ServerErrorException'
+	 */
 
 	private async create(
 		req: Request,
@@ -46,6 +99,61 @@ class GameResultController extends Controller {
 			next(new ServerErrorException(error));
 		}
 	}
+	/**
+	 * @swagger
+	 * /api/game-results/{patientId}/{gameId}/{initialDate}/{finalDate}/{sound}:
+	 *   get:
+	 *     summary: Get game results for a specific patient and game.
+	 *     description: Retrieves all game results for a specific patient and game within a date range, filtered by sound.
+	 *     tags:
+	 *       - GameResults
+	 *     parameters:
+	 *       - in: path
+	 *         name: patientId
+	 *         schema:
+	 *           type: string
+	 *         required: true
+	 *         description: The ID of the patient to retrieve game results for.
+	 *       - in: path
+	 *         name: gameId
+	 *         schema:
+	 *           type: string
+	 *         required: true
+	 *         description: The ID of the game to retrieve results for.
+	 *       - in: path
+	 *         name: initialDate
+	 *         schema:
+	 *           type: string
+	 *           format: date
+	 *         required: true
+	 *         description: The initial date of the range to retrieve results for.
+	 *       - in: path
+	 *         name: finalDate
+	 *         schema:
+	 *           type: string
+	 *           format: date
+	 *         required: true
+	 *         description: The final date of the range to retrieve results for.
+	 *       - in: path
+	 *         name: sound
+	 *         schema:
+	 *           type: string
+	 *         required: false
+	 *         description: The sound to filter the results by (optional).
+	 *     produces:
+	 *       - application/json
+	 *     responses:
+	 *       200:
+	 *         description: The list of game results for the specified patient and game.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               $ref: '#/components/schemas/GameResult'
+	 *       204:
+	 *         description: The requested game results were not found.
+	 *       500:
+	 *         description: An error occurred while processing the request.
+	 */
 
 	private async listByPatientIdAndGameId(
 		req: Request,
@@ -81,6 +189,77 @@ class GameResultController extends Controller {
 			next(new ServerErrorException(error));
 		}
 	}
+	/**
+	 * @swagger
+	 * /average-month-results/{patientId}/{gameId}/{initialDate}/{finalDate}/{sound}:
+	 *   get:
+	 *     summary: Get the average monthly results of a patient's game
+	 *     description: Retrieve the average monthly results of a patient's game for a given period of time.
+	 *     tags:
+	 *       - GameResults
+	 *     parameters:
+	 *       - in: path
+	 *         name: patientId
+	 *         schema:
+	 *           type: string
+	 *         required: true
+	 *         description: The ID of the patient to retrieve the results for
+	 *       - in: path
+	 *         name: gameId
+	 *         schema:
+	 *           type: string
+	 *         required: true
+	 *         description: The ID of the game to retrieve the results for
+	 *       - in: path
+	 *         name: initialDate
+	 *         schema:
+	 *           type: string
+	 *           format: date-time
+	 *         required: true
+	 *         description: The start date of the period to retrieve the results for (YYYY-MM-DD)
+	 *       - in: path
+	 *         name: finalDate
+	 *         schema:
+	 *           type: string
+	 *           format: date-time
+	 *         required: true
+	 *         description: The end date of the period to retrieve the results for (YYYY-MM-DD)
+	 *       - in: path
+	 *         name: sound
+	 *         schema:
+	 *           type: string
+	 *         required: true
+	 *         description: The sound to retrieve the results for (e.g. 'sound1', 'sound2')
+	 *     responses:
+	 *       200:
+	 *         description: The average monthly results for the given patient and game
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: array
+	 *               items:
+	 *                 type: object
+	 *                 properties:
+	 *                   daysLogged:
+	 *                     type: integer
+	 *                     description: The number of days with logged results for this month
+	 *                   results:
+	 *                     type: object
+	 *                     properties:
+	 *                       month-year:
+	 *                         type: string
+	 *                         description: The month and year of the average results (e.g. '01-2022')
+	 *                       metric1:
+	 *                         type: number
+	 *                         description: The average value of metric1 for this month
+	 *                       metric2:
+	 *                         type: number
+	 *                         description: The average value of metric2 for this month
+	 *       204:
+	 *         description: No content available for the given parameters
+	 *       500:
+	 *         description: Internal server error
+	 */
 
 	private async listAverageMonthByPatientIdAndGameId(
 		req: Request,
@@ -146,6 +325,73 @@ class GameResultController extends Controller {
 			next(new ServerErrorException(error));
 		}
 	}
+	/**
+	 * @swagger
+	 * /api/games/{gameId}/results/average/year/{patientId}:
+	 *   get:
+	 *     summary: Get average results for a game by year for a patient
+	 *     description: Returns the average results for a game by year for a given patient ID and game ID within a specified date range.
+	 *     tags:
+	 *       - GameResults
+	 *     parameters:
+	 *       - in: path
+	 *         name: gameId
+	 *         schema:
+	 *           type: string
+	 *         required: true
+	 *         description: The ID of the game.
+	 *       - in: path
+	 *         name: patientId
+	 *         schema:
+	 *           type: string
+	 *         required: true
+	 *         description: The ID of the patient.
+	 *       - in: query
+	 *         name: initialDate
+	 *         schema:
+	 *           type: string
+	 *         required: true
+	 *         description: The initial date for the search in YYYY-MM-DD format.
+	 *       - in: query
+	 *         name: finalDate
+	 *         schema:
+	 *           type: string
+	 *         required: true
+	 *         description: The final date for the search in YYYY-MM-DD format.
+	 *       - in: query
+	 *         name: sound
+	 *         schema:
+	 *           type: string
+	 *         required: false
+	 *         description: The sound used in the game.
+	 *     produces:
+	 *       - application/json
+	 *     responses:
+	 *       200:
+	 *         description: Average results for a game by year for a patient
+	 *         schema:
+	 *           type: array
+	 *           items:
+	 *             type: object
+	 *             properties:
+	 *               daysLogged:
+	 *                 type: number
+	 *                 description: The number of days logged for the patient.
+	 *               results:
+	 *                 type: object
+	 *                 properties:
+	 *                   year:
+	 *                     type: string
+	 *                     description: The year.
+	 *                   [resultKey]:
+	 *                     type: number
+	 *                     description: The average result for the specified key.
+	 *               description: The average results for the specified year.
+	 *       204:
+	 *         description: No content found for the specified query.
+	 *       500:
+	 *         description: Internal server error.
+	 */
 
 	private async listAverageYearByPatientIdAndGameId(
 		req: Request,
@@ -207,31 +453,3 @@ class GameResultController extends Controller {
 }
 
 export default GameResultController;
-[
-	{
-		daysLogged: 1,
-		_id: '63e68c726756465c34e45087',
-		patientId: '63e3054fb899d71d20a7a328',
-		gameId: '63e675e9ae43555458934434',
-		results: {
-			timeToClick: 10,
-			totalTime: 200,
-			totalPoints: 600,
-		},
-		sound: 'true',
-		date: '2023-02-09T18:26:58.649Z',
-	},
-	{
-		daysLogged: 1,
-		_id: '63e6a99b3fd5f611c045d04f',
-		patientId: '63e3054fb899d71d20a7a328',
-		gameId: '63e675e9ae43555458934434',
-		results: {
-			timeToClick: 20,
-			totalTime: 200,
-			totalPoints: 600,
-		},
-		sound: 'true',
-		date: '2023-01-10T17:31:23.036Z',
-	},
-];

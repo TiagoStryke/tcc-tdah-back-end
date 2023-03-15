@@ -16,6 +16,12 @@ import responseOk from '../responses/ResponseOk';
 dotenv.config({
 	path: __dirname + '/../.env',
 });
+/**
+ * @swagger
+ * tags:
+ *   name: Users
+ *   description: API for managing users
+ */
 class UserController extends Controller {
 	constructor() {
 		super('/user');
@@ -30,6 +36,47 @@ class UserController extends Controller {
 		this.router.put(`${this.path}/:id/code`, this.insertGeneratedCode);
 		this.router.post(`${this.path}/login`, this.login);
 	}
+	/**
+	 * @swagger
+	 * /login:
+	 *   post:
+	 *     summary: Login to the application
+	 *     tags:
+	 *       - Authentication
+	 *     requestBody:
+	 *       description: User credentials to authenticate
+	 *       required: true
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             type: object
+	 *             properties:
+	 *               email:
+	 *                 type: string
+	 *                 format: email
+	 *               password:
+	 *                 type: string
+	 *                 format: password
+	 *             example:
+	 *               email: john@example.com
+	 *               password: password123
+	 *     responses:
+	 *       200:
+	 *         description: Returns a JSON Web Token
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 token:
+	 *                   type: string
+	 *                   description: JSON Web Token
+	 *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjM0NTY3ODkwIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+	 *       401:
+	 *         $ref: '#/components/responses/UnauthorizedError'
+	 *       500:
+	 *         $ref: '#/components/responses/InternalServerError'
+	 */
 
 	private async login(
 		req: Request,
@@ -61,7 +108,27 @@ class UserController extends Controller {
 			next(new ServerErrorException(error));
 		}
 	}
-
+	/**
+	 * @swagger
+	 * /users:
+	 *   get:
+	 *     summary: Retrieves a list of all users.
+	 *     tags:
+	 *       - Users
+	 *     responses:
+	 *       200:
+	 *         description: A list of users.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: array
+	 *               items:
+	 *                 $ref: '#/components/schemas/User'
+	 *       204:
+	 *         description: No users found.
+	 *     security:
+	 *       - bearerAuth: []
+	 */
 	private async list(
 		req: Request,
 		res: Response,
@@ -76,7 +143,31 @@ class UserController extends Controller {
 			next(new ServerErrorException(error));
 		}
 	}
-
+	/**
+	 * @swagger
+	 * /users/{id}:
+	 *   get:
+	 *     summary: Get a user by ID
+	 *     tags: [Users]
+	 *     parameters:
+	 *       - in: path
+	 *         name: id
+	 *         schema:
+	 *           type: string
+	 *         required: true
+	 *         description: User ID
+	 *     responses:
+	 *       200:
+	 *         description: Success
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               $ref: '#/components/schemas/User'
+	 *       204:
+	 *         description: No content found for the specified ID
+	 *     security:
+	 *       - bearerAuth: []
+	 */
 	private async findById(
 		req: Request,
 		res: Response,
@@ -93,6 +184,34 @@ class UserController extends Controller {
 			next(new ServerErrorException(error));
 		}
 	}
+	/**
+	 * @swagger
+	 * /api/users:
+	 *   post:
+	 *     summary: Create a new user.
+	 *     requestBody:
+	 *       description: User object that needs to be created.
+	 *       required: true
+	 *       content:
+	 *         application/json:
+	 *           schema:
+	 *             $ref: '#/components/schemas/User'
+	 *     tags:
+	 *       - Users
+	 *     responses:
+	 *       201:
+	 *         description: User created successfully.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               $ref: '#/components/schemas/User'
+	 *       500:
+	 *         description: Internal server error.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               $ref: '#/components/schemas/Error'
+	 */
 
 	private async create(
 		req: Request,
@@ -107,7 +226,50 @@ class UserController extends Controller {
 			next(new ServerErrorException(error));
 		}
 	}
-
+	/**
+	 * Update an existing user by ID
+	 *
+	 * @swagger
+	 * /users/{id}:
+	 *   put:
+	 *     summary: Update an existing user by ID
+	 *     tags:
+	 *       - Users
+	 *     parameters:
+	 *       - name: id
+	 *         in: path
+	 *         description: ID of the user to update
+	 *         required: true
+	 *         schema:
+	 *           type: string
+	 *       - name: password
+	 *         in: body
+	 *         description: New password for the user (optional)
+	 *         required: false
+	 *         schema:
+	 *           type: object
+	 *           properties:
+	 *             password:
+	 *               type: string
+	 *       - name: profilePhoto
+	 *         in: body
+	 *         description: New profile photo for the user (optional)
+	 *         required: false
+	 *         schema:
+	 *           type: object
+	 *           properties:
+	 *             profilePhoto:
+	 *               type: string
+	 *     responses:
+	 *       '200':
+	 *         description: User updated successfully
+	 *         schema:
+	 *           $ref: '#/definitions/User'
+	 *       '204':
+	 *         description: No user found for the given ID
+	 *       '500':
+	 *         description: Internal server error
+	 */
 	private async edit(
 		req: Request,
 		res: Response,
@@ -146,7 +308,51 @@ class UserController extends Controller {
 			next(new ServerErrorException(error));
 		}
 	}
-
+	/**
+	 * @swagger
+	 * /users/{id}:
+	 *   delete:
+	 *     summary: Delete a user by ID
+	 *     description: Delete a user by ID
+	 *     tags: [Users]
+	 *     parameters:
+	 *       - in: path
+	 *         name: id
+	 *         schema:
+	 *           type: string
+	 *         required: true
+	 *         description: ID of the user to delete
+	 *     responses:
+	 *       200:
+	 *         description: User deleted successfully
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               type: object
+	 *               properties:
+	 *                 _id:
+	 *                   type: string
+	 *                   description: ID of the deleted user
+	 *                 email:
+	 *                   type: string
+	 *                   description: Email of the deleted user
+	 *                 password:
+	 *                   type: string
+	 *                   description: Hashed password of the deleted user
+	 *                 profilePhoto:
+	 *                   type: string
+	 *                   description: URL of the profile photo of the deleted user
+	 *                 createdAt:
+	 *                   type: string
+	 *                   description: Date of creation of the deleted user
+	 *                 updatedAt:
+	 *                   type: string
+	 *                   description: Date of last update of the deleted user
+	 *       204:
+	 *         description: No content found with the specified ID
+	 *       500:
+	 *         description: Server error
+	 */
 	private async delete(
 		req: Request,
 		res: Response,
@@ -167,6 +373,41 @@ class UserController extends Controller {
 			next(new ServerErrorException(error));
 		}
 	}
+	/**
+	 * @swagger
+	 * /users/{id}/generated-code:
+	 *   post:
+	 *     summary: Insert generated code for a user.
+	 *     description: Inserts an array of generated codes for a specific user. The generated codes array will be limited to 10 items, keeping only the last 10 codes added.
+	 *     tags:
+	 *       - Users
+	 *     parameters:
+	 *       - in: path
+	 *         name: id
+	 *         schema:
+	 *           type: string
+	 *         required: true
+	 *         description: The ID of the user to insert the generated codes for.
+	 *       - in: body
+	 *         name: generatedCode
+	 *         schema:
+	 *           type: array
+	 *           items:
+	 *             type: string
+	 *         required: true
+	 *         description: An array of generated codes to insert for the user.
+	 *     responses:
+	 *       200:
+	 *         description: The updated user with the new generated codes array.
+	 *         content:
+	 *           application/json:
+	 *             schema:
+	 *               $ref: '#/components/schemas/User'
+	 *       204:
+	 *         description: The requested user was not found.
+	 *       500:
+	 *         description: An error occurred while processing the request.
+	 */
 
 	private async insertGeneratedCode(
 		req: Request,
